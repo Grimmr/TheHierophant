@@ -1,0 +1,5 @@
+(library
+ (name TheHierophant)
+ (public_name TheHierophant))
+
+(ocamllex Lexer)
