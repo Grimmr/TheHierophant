@@ -9,8 +9,14 @@ let alpha = ['a'-'z' 'A'-'Z']
 let alphaNum = alpha|digit
 
 rule lex_root = parse
-    | digit+ { INT (int_of_string (Lexing.lexeme lexbuf)) }
-    | 'a' { A }
+    | [' ' '\t' '\n'] { lex_root lexbuf }
+    | '{' { LBRACE }
+    | '{' { RBRACE }
+    | ';' { SEMI }
+    | ':' { COLON }
+    | '*' { STAR }
+    | "use" { USE }
+    | alpha alphaNum+ { DSTR (Lexing.lexeme lexbuf) }
     | eof { EOF }
 
 {
