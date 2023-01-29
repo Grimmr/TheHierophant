@@ -2,4 +2,5 @@
  (name TheHierophant)
  (public_name TheHierophant))
 
+(menhir (modules Parser))
 (ocamllex Lexer)

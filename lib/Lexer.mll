@@ -1,5 +1,6 @@
 {
-  open Printf
+  [@@@coverage exclude_file]
+  open Parser
 }
 
 (* Define helper regexes *)
@@ -8,9 +9,9 @@ let alpha = ['a'-'z' 'A'-'Z']
 let alphaNum = alpha|digit
 
 rule lex_root = parse
-    | '\n' { printf "NL "; lex_root lexbuf }
-    | 'a' { printf "A "; lex_root lexbuf }
-    | eof { () }
+    | digit+ { INT (int_of_string (Lexing.lexeme lexbuf)) }
+    | 'a' { A }
+    | eof { EOF }
 
 {
   let lex () =

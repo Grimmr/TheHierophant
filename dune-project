@@ -4,23 +4,24 @@
 
 (generate_opam_files true)
 
-(source
- (github username/reponame))
+;(source (github username/reponame))
 
-(authors "Author Name")
+(authors "Grimmr")
 
-(maintainers "Maintainer Name")
+(maintainers "Grimmr")
 
-(license LICENSE)
+;(license LICENSE)
 
-(documentation https://url/to/documentation)
+;(documentation https://url/to/documentation)
 
 (package
  (name TheHierophant)
  (synopsis "A short synopsis")
  (description "A longer description")
  (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
+ ;(tags (topics "to describe" your project))
+ )
+
+(using menhir 2.0)
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
