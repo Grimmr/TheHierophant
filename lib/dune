@@ -1,6 +1,7 @@
 (library
  (name TheHierophant)
- (public_name TheHierophant))
+ (public_name TheHierophant)
+ (flags (-w -30)))
 
 (menhir (modules Parser))
 (ocamllex Lexer)
