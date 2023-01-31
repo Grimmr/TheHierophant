@@ -6,7 +6,8 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> declarations name
+%type <nodeDummy> declarations
+%type <nodeIdentifier> name
 %token <string> DSTR
 
 %token EOF USE SEMI STAR COLON LBRACE RBRACE EQ COMA
@@ -18,6 +19,7 @@
 %type <nodeUseStatement> useStatement
 %type <nodeImportAlias> importAlias
 %type <nodeMemberList> memberList
+%type <nodeMember> member
 
 
 %%
@@ -37,9 +39,10 @@ importAlias: n=name; EQ; { {name=Name n} }
 memberList: m=member; COMA;               { {member=Member m; members=None} }
           | m=member;                     { {member=Member m; members=None} }
           | m=member; COMA; t=memberList; { {member=Member m; members=Some (MemberList t)} }
+member: i=name;             { {alias=None; ident=Name i} }
+      | a=name; EQ; i=name; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
 declarations: DUMMY; { A }
 identifier: i=DSTR; { i }
-name: DUMMY; { B }
-member: DUMMY; { C }
+name: j=identifier; { j }

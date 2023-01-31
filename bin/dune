@@ -1,4 +1,5 @@
 (executable
  (public_name TheHierophant)
  (name main)
- (libraries TheHierophant))
+ (libraries TheHierophant)
+ (modes byte exe))
