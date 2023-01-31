@@ -4,26 +4,26 @@
 }
 
 (* Define helper regexes *)
+let whiteSpace = [' ' '\t' '\n']
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
 let alphaNum = alpha|digit
 let name = alpha alphaNum*
 
 rule lex_root = parse
-    | [' ' '\t' '\n'] { lex_root lexbuf }
+    | whiteSpace { lex_root lexbuf }
     | '{' { LBRACE }
     | '}' { RBRACE }
     | ';' { SEMI }
     | ':' { COLON }
     | "::" { DCOLON }
-    | ":: " { SDCOLON }
-    | " ::" { SDCOLON }
-    | " :: " { SDCOLON }
+    | "::" whiteSpace* '*' { DCOLONS }
+    | "::" whiteSpace* '{' { DCOLONB }
     | '*' { STAR }
     | "use" { USE }
     | '=' { EQ }
     | ',' { COMA }
-    | 'a' { NAME (Lexing.lexeme lexbuf) }
+    | name { NAME (Lexing.lexeme lexbuf) }
     | eof { EOF }
 
 {
