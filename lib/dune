@@ -3,5 +3,5 @@
  (public_name TheHierophant)
  (flags (-w -30)))
 
-(menhir (modules Parser))
+(menhir (modules Parser) (flags --explain))
 (ocamllex Lexer)

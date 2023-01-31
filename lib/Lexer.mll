@@ -7,6 +7,7 @@
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
 let alphaNum = alpha|digit
+let name = alpha alphaNum*
 
 rule lex_root = parse
     | [' ' '\t' '\n'] { lex_root lexbuf }
@@ -14,11 +15,15 @@ rule lex_root = parse
     | '}' { RBRACE }
     | ';' { SEMI }
     | ':' { COLON }
+    | "::" { DCOLON }
+    | ":: " { SDCOLON }
+    | " ::" { SDCOLON }
+    | " :: " { SDCOLON }
     | '*' { STAR }
     | "use" { USE }
     | '=' { EQ }
     | ',' { COMA }
-    | alpha alphaNum* { DSTR (Lexing.lexeme lexbuf) }
+    | 'a' { NAME (Lexing.lexeme lexbuf) }
     | eof { EOF }
 
 {
