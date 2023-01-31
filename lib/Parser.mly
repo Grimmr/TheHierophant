@@ -6,16 +6,18 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> declarations importAlias memberList 
+%type <nodeDummy> declarations name
 %token <string> DSTR
 
-%token EOF USE SEMI STAR COLON LBRACE RBRACE
+%token EOF USE SEMI STAR COLON LBRACE RBRACE EQ COMA
 
 %start subUnit
 
 %type <nodeSubUnit> subUnit
 %type <nodeImports> imports
 %type <nodeUseStatement> useStatement
+%type <nodeImportAlias> importAlias
+%type <nodeMemberList> memberList
 
 
 %%
@@ -31,9 +33,13 @@ useStatement: USE; a=importAlias; i=identifier; SEMI;                           
             | USE; a=importAlias; i=identifier; COLON; COLON; LBRACE; m=memberList; RBRACE; SEMI; { {alias=Some (ImportAlias a); ident=Identifier i; members=Some (MemberList m); qualify=true} } 
             | USE; i=identifier; COLON; COLON; LBRACE; m=memberList; RBRACE; SEMI;                { {alias=None; ident=Identifier i; members=Some (MemberList m); qualify=true} } 
             | USE; i=identifier; COLON; COLON; STAR; SEMI;                                        { {alias=None; ident=Identifier i; members=None; qualify=false} }
+importAlias: n=name; EQ; { {name=Name n} }
+memberList: m=member; COMA;               { {member=Member m; members=None} }
+          | m=member;                     { {member=Member m; members=None} }
+          | m=member; COMA; t=memberList; { {member=Member m; members=Some (MemberList t)} }
 
 //dummies
 declarations: DUMMY; { A }
-importAlias: DUMMY; { B }
 identifier: i=DSTR; { i }
-memberList: DUMMY; { D }
+name: DUMMY; { B }
+member: DUMMY; { C }

@@ -16,6 +16,8 @@ rule lex_root = parse
     | ':' { COLON }
     | '*' { STAR }
     | "use" { USE }
+    | "=" { EQ }
+    | "," { COMA }
     | alpha alphaNum+ { DSTR (Lexing.lexeme lexbuf) }
     | eof { EOF }
 
