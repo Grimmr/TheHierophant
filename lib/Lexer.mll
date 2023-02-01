@@ -23,6 +23,8 @@ rule lex_root = parse
     | "use" { USE }
     | '=' { EQ }
     | ',' { COMA }
+    | "EXPORT" { EXPORT }
+    | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | name { NAME (Lexing.lexeme lexbuf) }
     | eof { EOF }
 
