@@ -6,10 +6,13 @@ type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
-and nodeGlobalDeclaration = { bindings: astNode }
+and nodeGlobalDeclaration = { globalBindings: astNode }
 and nodeGlobalBindings = { bindings: astNode option; binding: astNode}
 and nodeGlobalBinding = { attr: astNode option; ident: astNode; typ: astNode option; expr: astNode option}
 and nodeDeclAttr = { threadLocal: astNode; symbol: astNode option }
+and nodeConstantDeclaration = { constantBindings: astNode }
+and nodeConstantBindings = { bindings: astNode option; binding: astNode }
+and nodeConstantBinding = { ident: astNode; typ: astNode; expr:astNode}
 and nodeSubUnit = {imports: astNode option; declarations: astNode option}
 and nodeImports = {import: astNode; imports: astNode option}
 and nodeUseStatement = {alias: astNode option; ident:astNode; members:astNode option; qualify:astNode}
@@ -20,28 +23,30 @@ and nodeMember = {alias: astNode option; ident: astNode}
 
 
 and astNode =  Identifier of nodeIdentifier
-             | Name of string
-             | StringConstant of nodeStringConstant
-             | StringLiteral of string
-             | Declarations of nodeDeclarations
-             | Declaration of nodeDeclaration
-             | GlobalDeclaration of nodeGlobalDeclaration
-             | GlobalBindings of nodeGlobalBindings
-             | GlobalBinding of nodeGlobalBinding
-             | DeclAttr of nodeDeclAttr
-             | SubUnit of nodeSubUnit 
-             | Imports of nodeImports
-             | UseStatement of nodeUseStatement
-             | ImportAlias of nodeImportAlias
-             | MemberList of nodeMemberList
-             | Member of nodeMember
-             | Bool of bool
-             | Dummy of nodeDummy
-             | ConstantDeclaration of nodeDummy
-             | TypeDeclaration of nodeDummy
-             | FunctionDeclaration of nodeDummy
-             | Expression of nodeDummy
-             | Typ of nodeDummy
+            | Name of string
+            | StringConstant of nodeStringConstant
+            | StringLiteral of string
+            | Declarations of nodeDeclarations
+            | Declaration of nodeDeclaration
+            | GlobalDeclaration of nodeGlobalDeclaration
+            | GlobalBindings of nodeGlobalBindings
+            | GlobalBinding of nodeGlobalBinding
+            | DeclAttr of nodeDeclAttr
+            | ConstantDeclaration of nodeConstantDeclaration
+            | ConstantBindings of nodeConstantBindings
+            | ConstantBinding of nodeConstantBinding
+            | SubUnit of nodeSubUnit 
+            | Imports of nodeImports
+            | UseStatement of nodeUseStatement
+            | ImportAlias of nodeImportAlias
+            | MemberList of nodeMemberList
+            | Member of nodeMember
+            | Bool of bool
+            | Dummy of nodeDummy
+            | TypeDeclaration of nodeDummy
+            | FunctionDeclaration of nodeDummy
+            | Expression of nodeDummy
+            | Typ of nodeDummy
              
 let rec sprint_ast (root:astNode) : string = match root with  
   | Identifier n -> "(Identifier " ^ sprint_ast n.name ^ sprint_ast_o n.tail ^ ")"
@@ -50,10 +55,13 @@ let rec sprint_ast (root:astNode) : string = match root with
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"
   | Declaration n -> "(Declaration " ^ sprint_ast n.declaration ^ ")"
-  | GlobalDeclaration n -> "(GlobalDeclaration " ^ sprint_ast n.bindings ^ ")"
+  | GlobalDeclaration n -> "(GlobalDeclaration " ^ sprint_ast n.globalBindings ^ ")"
   | GlobalBindings n -> "(GlobalBindings" ^ sprint_ast_o n.bindings ^ " " ^ sprint_ast n.binding ^ ")"
   | GlobalBinding n -> "(GlobalBinding" ^ sprint_ast_o n.attr ^ " " ^ sprint_ast n.ident ^ sprint_ast_o n.typ ^ sprint_ast_o n.expr ^ ")"
   | DeclAttr n -> "(DeclAttr " ^ sprint_ast n.threadLocal ^ sprint_ast_o n.symbol ^ ")"
+  | ConstantDeclaration n -> "(ConstantDeclaration " ^ sprint_ast n.constantBindings ^ ")"
+  | ConstantBindings n -> "(ConstantBindings" ^ sprint_ast_o n.bindings ^ " " ^ sprint_ast n.binding ^ ")" 
+  | ConstantBinding n -> "(ConstantBinding " ^ sprint_ast n.ident ^ " " ^ sprint_ast n.typ ^ " " ^ sprint_ast n.expr ^ ")"  
   | SubUnit n -> "(SubUnit" ^ sprint_ast_o n.imports ^ sprint_ast_o n.declarations ^ ")"
   | Imports n -> "(Imports " ^ sprint_ast n.import ^ sprint_ast_o n.imports ^ ")"
   | UseStatement n -> "(UseStatement" ^ sprint_ast_o n.alias ^ " " ^ sprint_ast n.ident ^ sprint_ast_o n.members ^ " " ^ sprint_ast n.qualify ^ ")"

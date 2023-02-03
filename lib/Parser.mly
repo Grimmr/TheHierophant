@@ -6,9 +6,9 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> functionDeclaration typeDeclaration constantDeclaration typ expression
+%type <nodeDummy> functionDeclaration typeDeclaration typ expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -21,6 +21,9 @@
 %type <nodeGlobalBindings> globalBindings 
 %type <nodeGlobalBinding> globalBinding
 %type <nodeDeclAttr> declAttr
+%type <nodeConstantDeclaration> constantDeclaration
+%type <nodeConstantBindings> constantBindings
+%type <nodeConstantBinding> constantBinding
 %type <nodeSubUnit> subUnit
 %type <nodeImports> imports
 %type <nodeUseStatement> useStatement
@@ -49,19 +52,25 @@ declaration: d=globalDeclaration;   { {declaration=GlobalDeclaration d} }
            | d=typeDeclaration;     { {declaration=TypeDeclaration d} }
            | d=functionDeclaration; { {declaration=FunctionDeclaration d} }
 //6.11.3 Global Declarations
-globalDeclaration: LET; b=globalBindings;   { {bindings=GlobalBindings b} }
-                 | CONST; b=globalBindings; { {bindings=GlobalBindings b} } 
-globalBindings: b=globalBinding; COMA;                   { {bindings=None; binding=GlobalBinding b} }
-              | b=globalBinding;                         { {bindings=None; binding=GlobalBinding b} }
+globalDeclaration: LET; b=globalBindings; COMA;   { {globalBindings=GlobalBindings b} }
+                 | LET; b=globalBindings;         { {globalBindings=GlobalBindings b} }
+                 | CONST; b=globalBindings; COMA; { {globalBindings=GlobalBindings b} } 
+                 | CONST; b=globalBindings;       { {globalBindings=GlobalBindings b} } 
+globalBindings: b=globalBinding;                          { {bindings=None; binding=GlobalBinding b} }
               | h=globalBindings; COMA; b=globalBinding;  { {bindings=Some (GlobalBindings h); binding=GlobalBinding b} }
-globalBinding: a=declAttr; i=identifier; COLON; t=typ;                     { {attr=Some (DeclAttr a); ident=Identifier i; typ=Some (Typ t); expr=None} }
-             | i=identifier; COLON; t=typ;                               { {attr=None; ident=Identifier i; typ=Some (Typ t); expr=None} }
-             | a=declAttr; i=identifier; COLON; t=typ; EQ; e=expression; { {attr=Some (DeclAttr a); ident=Identifier i; typ=Some (Typ t); expr=Some (Expression e)} }
-             | i=identifier; COLON; t=typ; EQ; e=expression;             { {attr=None; ident=Identifier i; typ=Some (Typ t); expr=Some (Expression e)} }
+globalBinding: a=declAttr; i=identifier; COLON; t=typ;                    { {attr=Some (DeclAttr a); ident=Identifier i; typ=Some (Typ t); expr=None} }
+             | i=identifier; COLON; t=typ;                                { {attr=None; ident=Identifier i; typ=Some (Typ t); expr=None} }
+             | a=declAttr; i=identifier; COLON; t=typ; EQ; e=expression;  { {attr=Some (DeclAttr a); ident=Identifier i; typ=Some (Typ t); expr=Some (Expression e)} }
+             | i=identifier; COLON; t=typ; EQ; e=expression;              { {attr=None; ident=Identifier i; typ=Some (Typ t); expr=Some (Expression e)} }
              | a=declAttr; i=identifier; EQ; e=expression;                { {attr=Some (DeclAttr a); ident=Identifier i; typ=None; expr=Some (Expression e)} }
              | i=identifier; EQ; e=expression;                            { {attr=None; ident=Identifier i; typ=None; expr=Some (Expression e)} }
 declAttr: ASYMBOL; LPAREN; s=stringConstant; RPAREN; { {threadLocal=Bool false; symbol=Some (StringConstant s)} }
         | ATHREADLOCAL;                              { {threadLocal=Bool true; symbol=None} }
+constantDeclaration: DEF; b=constantBindings; COMA; { {constantBindings=ConstantBindings b} }
+                   | DEF; b=constantBindings        { {constantBindings=ConstantBindings b} }
+constantBindings: b=constantBinding;                          { {bindings=None; binding=ConstantBinding b} }
+                | h=constantBindings; COMA; b=constantBinding { {bindings=Some (ConstantBindings h); binding=ConstantBinding b} }
+constantBinding: i=identifier; COLON; t=typ; EQ; e=expression { {ident=Identifier i; typ=Typ t; expr=Expression e} }
 
 //6.12 Units
 subUnit: i=imports; d=declarations; EOF; { {imports=Some (Imports i); declarations=Some (Declarations d)} }
@@ -82,7 +91,6 @@ member: i=NAME;             { {alias=None; ident=Name i} }
       | a=NAME; EQ; i=NAME; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
-constantDeclaration: DUMMY; { A }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 typ: DUMMY; { D }
