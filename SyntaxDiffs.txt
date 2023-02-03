@@ -1,0 +1,9 @@
+To make a syntax that works without conflicts in an LR(1) parser generator some changes had to be made to the rules in the spec
+
+1) string literals:
+    we use "stringconst -> stringconst STRING_LIT" not "stringconst -> stringconst stringconst". we don't actually care which arbitrary action our parser generator would choose. But this way we know that string consts should be evaluated top down
+
+2) left handed lists:
+    In general rules of the form "list -> list DELIM element | element | element DELIM" cause Menhir to generate a parser that will never accept a multi element list. To preserve the syntax tree specified in the docs we move the optional DELIM after an element to an optional DELIM after a list (ie: all productions "_ -> a list b" cause an additional productions "_ -> a list DELIM b" to be added. this doesn't change the shape of the AST as DELIM doesn't have semantic content) 
+    Cases:
+        ConstantBindings, GlobalBindings
