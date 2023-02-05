@@ -3,6 +3,7 @@ type dummy = A | B | C | D
 type nodeDummy = dummy
 
 type nodeIdentifier = { name: astNode; tail:astNode option}
+and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -24,6 +25,7 @@ and nodeMember = {alias: astNode option; ident: astNode}
 
 and astNode =  Identifier of nodeIdentifier
             | Name of string
+            | Typ of nodeTyp
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -46,11 +48,12 @@ and astNode =  Identifier of nodeIdentifier
             | TypeDeclaration of nodeDummy
             | FunctionDeclaration of nodeDummy
             | Expression of nodeDummy
-            | Typ of nodeDummy
+            | StorageClass of nodeDummy
              
 let rec sprint_ast (root:astNode) : string = match root with  
   | Identifier n -> "(Identifier " ^ sprint_ast n.name ^ sprint_ast_o n.tail ^ ")"
   | Name n -> "(NAME " ^ n ^ ")"
+  | Typ n -> "(Typ " ^ sprint_ast n.const ^ " " ^ sprint_ast n.error ^ " " ^ sprint_ast n.storage ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"

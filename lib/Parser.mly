@@ -6,14 +6,15 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> functionDeclaration typeDeclaration typ expression
+%type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG
 %token <string> NAME STRINGLIT
 
 %start subUnit
 
 %type <nodeIdentifier> identifier
+%type <nodeTyp> typ
 %type <nodeStringConstant> stringConstant
 %type <nodeDeclarations> declarations
 %type <nodeDeclaration> declaration
@@ -36,6 +37,21 @@
 //6.4 Identifiers
 identifier: n=NAME                   { {name=Name n; tail=None} }
           | n=NAME DCOLON i=identifier { {name=Name n; tail=Some (Identifier i)} }
+
+//6.5 Types
+typ: CONST; BANG; c=storageClass; { {const=Bool true; error=Bool true; storage=StorageClass c} }
+   | CONST; c=storageClass;       { {const=Bool true; error=Bool false; storage=StorageClass c} }
+   | BANG; c=storageClass;        { {const=Bool false; error=Bool true; storage=StorageClass c} }
+   | c=storageClass;              { {const=Bool false; error=Bool false; storage=StorageClass c} }
+storageClass: t=scalarType;         { t }
+            | t=structUnionType;    { t }
+            | t=tupleType;          { t }
+            | t=taggedUnionType;    { t }
+            | t=sliceArrayType;     { t }
+            | t=functionType;       { t }
+            | t=aliasType;          { t }
+            | t=unwrappedAliasType; { t }
+            | t=stringType;         { t }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -93,5 +109,13 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 //dummies
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
-typ: DUMMY; { D }
 expression: DUMMY; { A }
+scalarType: DUMMY; { A }
+structUnionType: DUMMY; { A }
+tupleType: DUMMY; { A }
+taggedUnionType: DUMMY; { A }
+sliceArrayType: DUMMY; { A }
+functionType: DUMMY; { A }
+aliasType: DUMMY; { A }
+unwrappedAliasType: DUMMY; { A }
+stringType: DUMMY; { A }
