@@ -39,6 +39,10 @@ rule lex_root = parse
     | ")" { RPAREN }
     | "def" { DEF }
     | '!' { BANG }
+    | "rune" { RUNE }
+    | "bool" { BOOL }
+    | "valist" { VALIST }
+    | "void" { VOID }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }

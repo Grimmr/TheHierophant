@@ -8,13 +8,14 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID
 %token <string> NAME STRINGLIT
 
 %start subUnit
 
 %type <nodeIdentifier> identifier
 %type <nodeTyp> typ
+%type <nodeStorageClass> storageClass
 %type <nodeStringConstant> stringConstant
 %type <nodeDeclarations> declarations
 %type <nodeDeclaration> declaration
@@ -43,15 +44,22 @@ typ: CONST; BANG; c=storageClass; { {const=Bool true; error=Bool true; storage=S
    | CONST; c=storageClass;       { {const=Bool true; error=Bool false; storage=StorageClass c} }
    | BANG; c=storageClass;        { {const=Bool false; error=Bool true; storage=StorageClass c} }
    | c=storageClass;              { {const=Bool false; error=Bool false; storage=StorageClass c} }
-storageClass: t=scalarType;         { t }
-            | t=structUnionType;    { t }
-            | t=tupleType;          { t }
-            | t=taggedUnionType;    { t }
-            | t=sliceArrayType;     { t }
-            | t=functionType;       { t }
-            | t=aliasType;          { t }
-            | t=unwrappedAliasType; { t }
-            | t=stringType;         { t }
+storageClass: t=scalarType;         { {storage=ScalarType t} }
+            | t=structUnionType;    { {storage=Dummy t} }
+            | t=tupleType;          { {storage=Dummy t} }
+            | t=taggedUnionType;    { {storage=Dummy t} }
+            | t=sliceArrayType;     { {storage=Dummy t} }
+            | t=functionType;       { {storage=Dummy t} }
+            | t=aliasType;          { {storage=Dummy t} }
+            | t=unwrappedAliasType; { {storage=Dummy t} }
+            | t=stringType;         { {storage=Dummy t} }
+scalarType: t=integerType;  { {subType=Dummy t} }
+          | t=floatingType; { {subType=Dummy t} }
+          | t=pointerType;  { {subType=Dummy t} }
+          | RUNE;           { {subType=BasicScalarType RUNE} }
+          | BOOL;           { {subType=BasicScalarType BOOL} }
+          | VALIST;         { {subType=BasicScalarType VALIST} }
+          | VOID;           { {subType=BasicScalarType VOID} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -110,7 +118,6 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-scalarType: DUMMY; { A }
 structUnionType: DUMMY; { A }
 tupleType: DUMMY; { A }
 taggedUnionType: DUMMY; { A }
@@ -119,3 +126,6 @@ functionType: DUMMY; { A }
 aliasType: DUMMY; { A }
 unwrappedAliasType: DUMMY; { A }
 stringType: DUMMY; { A }
+integerType: DUMMY; {A}
+pointerType: DUMMY; {A}
+floatingType: DUMMY; {A}
