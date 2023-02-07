@@ -8,7 +8,7 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -53,13 +53,26 @@ storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=aliasType;          { {storage=Dummy t} }
             | t=unwrappedAliasType; { {storage=Dummy t} }
             | t=stringType;         { {storage=Dummy t} }
-scalarType: t=integerType;  { {subType=Dummy t} }
+scalarType: t=integerType;  { {subType=IntegerType t} }
           | t=floatingType; { {subType=Dummy t} }
           | t=pointerType;  { {subType=Dummy t} }
           | RUNE;           { {subType=BasicScalarType RUNE} }
           | BOOL;           { {subType=BasicScalarType BOOL} }
           | VALIST;         { {subType=BasicScalarType VALIST} }
           | VOID;           { {subType=BasicScalarType VOID} }
+integerType: I8;      { {signed=Bool true; size=IntegerSize S8; numeric=Bool true} }
+           | I16;     { {signed=Bool true; size=IntegerSize S16; numeric=Bool true} }
+           | I32;     { {signed=Bool true; size=IntegerSize S32; numeric=Bool true} }
+           | I64;     { {signed=Bool true; size=IntegerSize S64; numeric=Bool true} }
+           | U8;      { {signed=Bool false; size=IntegerSize S8; numeric=Bool true} }
+           | U16;     { {signed=Bool false; size=IntegerSize S16; numeric=Bool true} }
+           | U32;     { {signed=Bool false; size=IntegerSize S32; numeric=Bool true} }
+           | U64;     { {signed=Bool false; size=IntegerSize S64; numeric=Bool true} }
+           | INT;     { {signed=Bool true; size=IntegerSize DEFAULT; numeric=Bool true} }
+           | UINT;    { {signed=Bool false; size=IntegerSize DEFAULT; numeric=Bool true} }
+           | SIZE;    { {signed=Bool false; size=IntegerSize SIZE; numeric=Bool true} }
+           | UINTPTR; { {signed=Bool false; size=IntegerSize POINTER; numeric=Bool true} }
+           | CHAR;    { {signed=Bool false; size=IntegerSize S8; numeric=Bool false} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -126,6 +139,5 @@ functionType: DUMMY; { A }
 aliasType: DUMMY; { A }
 unwrappedAliasType: DUMMY; { A }
 stringType: DUMMY; { A }
-integerType: DUMMY; {A}
 pointerType: DUMMY; {A}
 floatingType: DUMMY; {A}

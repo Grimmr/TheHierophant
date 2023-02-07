@@ -43,6 +43,19 @@ rule lex_root = parse
     | "bool" { BOOL }
     | "valist" { VALIST }
     | "void" { VOID }
+    | "i8" { I8 }
+    | "i16" { I16 }
+    | "i32" { I32 }
+    | "i64" { I64 }
+    | "u8" { U8 }
+    | "u16" { U16 }
+    | "u32" { U32 }
+    | "u64" { U64 }
+    | "int" { INT }
+    | "uint" { UINT }
+    | "size" { SIZE }
+    | "uintptr" { UINTPTR }
+    | "char" { CHAR }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }

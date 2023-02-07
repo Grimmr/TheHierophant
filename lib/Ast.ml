@@ -9,10 +9,21 @@ let string_of_basicScalarType = function
   | VALIST -> "VALIST"
   | VOID -> "VOID"
 
+type integerSize = S8 | S16 | S32 | S64 | POINTER | SIZE | DEFAULT
+let string_of_integerSize = function 
+  | S8 -> "S8"
+  | S16 -> "S16"
+  | S32 -> "S32"
+  | S64 -> "S64"
+  | POINTER -> "POINTER"
+  | SIZE -> "SIZE"
+  | DEFAULT -> "DEFAULT"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
 and nodeScalarType = { subType: astNode }
+and nodeIntegerType = { signed: astNode; size: astNode; numeric: astNode}
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -38,6 +49,8 @@ and astNode =  Identifier of nodeIdentifier
             | StorageClass of nodeStorageClass
             | ScalarType of nodeScalarType
             | BasicScalarType of basicScalarType 
+            | IntegerType of nodeIntegerType
+            | IntegerSize of integerSize
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -68,6 +81,8 @@ let rec sprint_ast (root:astNode) : string = match root with
   | StorageClass n -> "(StorageClass " ^ sprint_ast n.storage ^ ")"
   | ScalarType n -> "(ScalarType " ^ sprint_ast n.subType ^ ")"
   | BasicScalarType n -> "(BasicScalarType " ^ string_of_basicScalarType n ^ ")"
+  | IntegerType n -> "(IntegerType " ^ sprint_ast n.signed ^ " " ^ sprint_ast n.size ^ " " ^ sprint_ast n.numeric ^ ")"
+  | IntegerSize n -> "(IntegerSize " ^ string_of_integerSize n ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"
