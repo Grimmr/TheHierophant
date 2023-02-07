@@ -19,11 +19,17 @@ let string_of_integerSize = function
   | SIZE -> "SIZE"
   | DEFAULT -> "DEFAULT"
 
+type floatSize = F32 | F64
+let string_of_floatSize = function 
+  | F32 -> "F32"
+  | F64 -> "F64"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
 and nodeScalarType = { subType: astNode }
 and nodeIntegerType = { signed: astNode; size: astNode; numeric: astNode}
+and nodeFloatingType = { size: astNode }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -51,6 +57,8 @@ and astNode =  Identifier of nodeIdentifier
             | BasicScalarType of basicScalarType 
             | IntegerType of nodeIntegerType
             | IntegerSize of integerSize
+            | FloatingType of nodeFloatingType
+            | FloatSize of floatSize
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -83,6 +91,8 @@ let rec sprint_ast (root:astNode) : string = match root with
   | BasicScalarType n -> "(BasicScalarType " ^ string_of_basicScalarType n ^ ")"
   | IntegerType n -> "(IntegerType " ^ sprint_ast n.signed ^ " " ^ sprint_ast n.size ^ " " ^ sprint_ast n.numeric ^ ")"
   | IntegerSize n -> "(IntegerSize " ^ string_of_integerSize n ^ ")"
+  | FloatingType n -> "(FloatType " ^ sprint_ast n.size ^ ")"
+  | FloatSize n -> "(FloatSize " ^ string_of_floatSize n ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"

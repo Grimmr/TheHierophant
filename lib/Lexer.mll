@@ -56,6 +56,8 @@ rule lex_root = parse
     | "size" { SIZE }
     | "uintptr" { UINTPTR }
     | "char" { CHAR }
+    | "f32" { F32 }
+    | "f64" { F64 }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }
