@@ -8,7 +8,7 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -47,7 +47,7 @@ typ: CONST; BANG; c=storageClass; { {const=Bool true; error=Bool true; storage=S
 storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=structUnionType;    { {storage=StructUnionType t} }
             | t=tupleType;          { {storage=TupleType t} }
-            | t=taggedUnionType;    { {storage=Dummy t} }
+            | t=taggedUnionType;    { {storage=TaggedUnionType t} }
             | t=sliceArrayType;     { {storage=Dummy t} }
             | t=functionType;       { {storage=Dummy t} }
             | t=aliasType;          { {storage=Dummy t} }
@@ -94,6 +94,10 @@ tupleType: LPAREN; t=tupleTypes; RPAREN; { {types=TupleTypes t} }
 tupleTypes: ta=typ; COMA; tb=typ; COMA; { {typ=Typ ta; tail=Some (TupleTypes {typ=Typ tb; tail=None})} }
           | ta=typ; COMA; tb=typ;       { {typ=Typ ta; tail=Some (TupleTypes {typ=Typ tb; tail=None})} }
           | ta=typ; COMA; l=tupleTypes; { {typ=Typ ta; tail=Some (TupleTypes l)} }
+taggedUnionType: LPAREN; t=taggedTypes; RPAREN { {types=TaggedTypes t} }
+taggedTypes: ta=typ; PIPE; tb=typ; PIPE  { {typ=Typ ta; tail=Some (TaggedTypes {typ=Typ tb; tail=None})} }
+           | ta=typ; PIPE; tb=typ;       { {typ=Typ ta; tail=Some (TaggedTypes {typ=Typ tb; tail=None})} }
+           | t=typ; PIPE;  l=taggedTypes { {typ=Typ t; tail=Some (TaggedTypes l)} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -152,7 +156,6 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-taggedUnionType: DUMMY; { A }
 sliceArrayType: DUMMY; { A }
 functionType: DUMMY; { A }
 aliasType: DUMMY; { A }

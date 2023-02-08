@@ -35,8 +35,8 @@ and nodeStructUnionType = { union: astNode; packed: astNode; fields:astNode }
 and nodeStructUnionFields = { field: astNode; tail: astNode option }
 and nodeStructUnionField = { unwrap: astNode; offset: astNode option; ident: astNode option; typ: astNode option }
 and nodeOffsetSpecifier = { expr: astNode }
-and nodeTupleType = { types: astNode }
-and nodeTupleTypes = { typ: astNode; tail: astNode option }
+and nodeIndirectTypes = { types: astNode }
+and nodeTypes = { typ: astNode; tail: astNode option }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -71,8 +71,10 @@ and astNode =  Identifier of nodeIdentifier
             | StructUnionFields of nodeStructUnionFields
             | StructUnionField of nodeStructUnionField
             | OffsetSpecifier of nodeOffsetSpecifier
-            | TupleType of nodeTupleType
-            | TupleTypes of nodeTupleTypes
+            | TupleType of nodeIndirectTypes
+            | TupleTypes of nodeTypes
+            | TaggedUnionType of nodeIndirectTypes
+            | TaggedTypes of nodeTypes
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -114,6 +116,8 @@ let rec sprint_ast (root:astNode) : string = match root with
   | OffsetSpecifier n -> "(OffsetSpecifier " ^ sprint_ast n.expr ^ ")"
   | TupleType n -> "(TupleType " ^ sprint_ast n.types ^ ")"
   | TupleTypes n -> "(TupleTypes " ^ sprint_ast n.typ ^ sprint_ast_o n.tail ^ ")"
+  | TaggedUnionType n -> "(TaggedUnionType " ^ sprint_ast n.types ^ ")"
+  | TaggedTypes n -> "(TaggedTypes " ^ sprint_ast n.typ ^ sprint_ast_o n.tail ^ ")" 
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ sprint_ast_o n.declarations ^ ")"
