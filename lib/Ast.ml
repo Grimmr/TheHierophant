@@ -30,6 +30,7 @@ and nodeStorageClass = { storage: astNode }
 and nodeScalarType = { subType: astNode }
 and nodeIntegerType = { signed: astNode; size: astNode; numeric: astNode}
 and nodeFloatingType = { size: astNode }
+and nodePointerType = { nullable: astNode; baseType: astNode }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -59,6 +60,7 @@ and astNode =  Identifier of nodeIdentifier
             | IntegerSize of integerSize
             | FloatingType of nodeFloatingType
             | FloatSize of floatSize
+            | PointerType of nodePointerType
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -93,6 +95,7 @@ let rec sprint_ast (root:astNode) : string = match root with
   | IntegerSize n -> "(IntegerSize " ^ string_of_integerSize n ^ ")"
   | FloatingType n -> "(FloatType " ^ sprint_ast n.size ^ ")"
   | FloatSize n -> "(FloatSize " ^ string_of_floatSize n ^ ")"
+  | PointerType n -> "(PointerType " ^ sprint_ast n.nullable ^ " " ^ sprint_ast n.baseType ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"

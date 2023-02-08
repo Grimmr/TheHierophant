@@ -8,7 +8,7 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -55,7 +55,7 @@ storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=stringType;         { {storage=Dummy t} }
 scalarType: t=integerType;  { {subType=IntegerType t} }
           | t=floatingType; { {subType=FloatingType t} }
-          | t=pointerType;  { {subType=Dummy t} }
+          | t=pointerType;  { {subType=PointerType t} }
           | RUNE;           { {subType=BasicScalarType RUNE} }
           | BOOL;           { {subType=BasicScalarType BOOL} }
           | VALIST;         { {subType=BasicScalarType VALIST} }
@@ -75,6 +75,8 @@ integerType: I8;      { {signed=Bool true; size=IntegerSize S8; numeric=Bool tru
            | CHAR;    { {signed=Bool false; size=IntegerSize S8; numeric=Bool false} }
 floatingType: F32; { {size=FloatSize F32} }
             | F64; { {size=FloatSize F64} }
+pointerType: STAR; t=typ;          { {nullable=Bool false; baseType=Typ t} }
+           | NULLABLE; STAR; t=typ { {nullable=Bool true; baseType=Typ t} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -141,4 +143,3 @@ functionType: DUMMY; { A }
 aliasType: DUMMY; { A }
 unwrappedAliasType: DUMMY; { A }
 stringType: DUMMY; { A }
-pointerType: DUMMY; {A}
