@@ -46,7 +46,7 @@ typ: CONST; BANG; c=storageClass; { {const=Bool true; error=Bool true; storage=S
    | c=storageClass;              { {const=Bool false; error=Bool false; storage=StorageClass c} }
 storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=structUnionType;    { {storage=StructUnionType t} }
-            | t=tupleType;          { {storage=Dummy t} }
+            | t=tupleType;          { {storage=TupleType t} }
             | t=taggedUnionType;    { {storage=Dummy t} }
             | t=sliceArrayType;     { {storage=Dummy t} }
             | t=functionType;       { {storage=Dummy t} }
@@ -90,6 +90,10 @@ structUnionField: o=offsetSpecifier; n=NAME; COLON; t=typ; { {unwrap=Bool false;
                 | o=offsetSpecifier; i=identifier;         { {unwrap=Bool true; offset=Some (OffsetSpecifier o); ident=Some (Identifier i); typ=None} }
                 | i=identifier                             { {unwrap=Bool true; offset=None; ident=Some (Identifier i); typ=None} }
 offsetSpecifier: AOFFSET; LPAREN; e=expression; RPAREN; { {expr=Expression e} }
+tupleType: LPAREN; t=tupleTypes; RPAREN; { {types=TupleTypes t} }
+tupleTypes: ta=typ; COMA; tb=typ; COMA; { {typ=Typ ta; tail=Some (TupleTypes {typ=Typ tb; tail=None})} }
+          | ta=typ; COMA; tb=typ;       { {typ=Typ ta; tail=Some (TupleTypes {typ=Typ tb; tail=None})} }
+          | ta=typ; COMA; l=tupleTypes; { {typ=Typ ta; tail=Some (TupleTypes l)} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -148,7 +152,6 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-tupleType: DUMMY; { A }
 taggedUnionType: DUMMY; { A }
 sliceArrayType: DUMMY; { A }
 functionType: DUMMY; { A }
