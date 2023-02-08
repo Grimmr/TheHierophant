@@ -31,6 +31,10 @@ and nodeScalarType = { subType: astNode }
 and nodeIntegerType = { signed: astNode; size: astNode; numeric: astNode}
 and nodeFloatingType = { size: astNode }
 and nodePointerType = { nullable: astNode; baseType: astNode }
+and nodeStructUnionType = { union: astNode; packed: astNode; fields:astNode }
+and nodeStructUnionFields = { field: astNode; tail: astNode option }
+and nodeStructUnionField = { unwrap: astNode; offset: astNode option; ident: astNode option; typ: astNode option }
+and nodeOffsetSpecifier = { expr: astNode }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -61,6 +65,10 @@ and astNode =  Identifier of nodeIdentifier
             | FloatingType of nodeFloatingType
             | FloatSize of floatSize
             | PointerType of nodePointerType
+            | StructUnionType of nodeStructUnionType
+            | StructUnionFields of nodeStructUnionFields
+            | StructUnionField of nodeStructUnionField
+            | OffsetSpecifier of nodeOffsetSpecifier
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -96,9 +104,13 @@ let rec sprint_ast (root:astNode) : string = match root with
   | FloatingType n -> "(FloatType " ^ sprint_ast n.size ^ ")"
   | FloatSize n -> "(FloatSize " ^ string_of_floatSize n ^ ")"
   | PointerType n -> "(PointerType " ^ sprint_ast n.nullable ^ " " ^ sprint_ast n.baseType ^ ")"
+  | StructUnionType n -> "(StructUnionType " ^ sprint_ast n.union ^ " " ^ sprint_ast n.packed ^ " " ^ sprint_ast n.fields ^ ")" 
+  | StructUnionFields n -> "(StructUnionFields " ^ sprint_ast n.field ^ sprint_ast_o n.tail ^ ")" 
+  | StructUnionField n -> "(StructUnionField " ^ sprint_ast n.unwrap ^ sprint_ast_o n.offset ^ sprint_ast_o n.ident ^ sprint_ast_o n.typ ^ ")"
+  | OffsetSpecifier n -> "(OffsetSpecifier " ^ sprint_ast n.expr ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
-  | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ " " ^ sprint_ast_o n.declarations ^ ")"
+  | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ sprint_ast_o n.declarations ^ ")"
   | Declaration n -> "(Declaration " ^ sprint_ast n.declaration ^ ")"
   | GlobalDeclaration n -> "(GlobalDeclaration " ^ sprint_ast n.globalBindings ^ ")"
   | GlobalBindings n -> "(GlobalBindings" ^ sprint_ast_o n.bindings ^ " " ^ sprint_ast n.binding ^ ")"
