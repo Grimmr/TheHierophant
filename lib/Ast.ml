@@ -24,6 +24,13 @@ let string_of_floatSize = function
   | F32 -> "F32"
   | F64 -> "F64"
 
+type arrayMode = SLICE | BOUNDED | CONTEXT | UNBOUNDED
+let string_of_arrayMode = function
+  | SLICE -> "(SLICE)"
+  | BOUNDED -> "(BOUNDED)"
+  | CONTEXT -> "(CONTEXT)"
+  | UNBOUNDED -> "(UNBOUNDED)"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
@@ -37,6 +44,7 @@ and nodeStructUnionField = { unwrap: astNode; offset: astNode option; ident: ast
 and nodeOffsetSpecifier = { expr: astNode }
 and nodeIndirectTypes = { types: astNode }
 and nodeTypes = { typ: astNode; tail: astNode option }
+and nodeSliceArrayType = { mode: astNode; expr: astNode option; baseType: astNode }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -75,6 +83,8 @@ and astNode =  Identifier of nodeIdentifier
             | TupleTypes of nodeTypes
             | TaggedUnionType of nodeIndirectTypes
             | TaggedTypes of nodeTypes
+            | SliceArrayType of nodeSliceArrayType
+            | ArrayMode of arrayMode
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -118,6 +128,8 @@ let rec sprint_ast (root:astNode) : string = match root with
   | TupleTypes n -> "(TupleTypes " ^ sprint_ast n.typ ^ sprint_ast_o n.tail ^ ")"
   | TaggedUnionType n -> "(TaggedUnionType " ^ sprint_ast n.types ^ ")"
   | TaggedTypes n -> "(TaggedTypes " ^ sprint_ast n.typ ^ sprint_ast_o n.tail ^ ")" 
+  | SliceArrayType n -> "(SliceArrayType " ^ sprint_ast n.mode ^ sprint_ast_o n.expr ^ " " ^ sprint_ast n.baseType ^ ")"
+  | ArrayMode n -> "(ArrayMode " ^ string_of_arrayMode n ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ sprint_ast_o n.declarations ^ ")"

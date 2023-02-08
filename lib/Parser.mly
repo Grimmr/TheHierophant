@@ -8,7 +8,7 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -48,7 +48,7 @@ storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=structUnionType;    { {storage=StructUnionType t} }
             | t=tupleType;          { {storage=TupleType t} }
             | t=taggedUnionType;    { {storage=TaggedUnionType t} }
-            | t=sliceArrayType;     { {storage=Dummy t} }
+            | t=sliceArrayType;     { {storage=SliceArrayType t} }
             | t=functionType;       { {storage=Dummy t} }
             | t=aliasType;          { {storage=Dummy t} }
             | t=unwrappedAliasType; { {storage=Dummy t} }
@@ -98,6 +98,10 @@ taggedUnionType: LPAREN; t=taggedTypes; RPAREN { {types=TaggedTypes t} }
 taggedTypes: ta=typ; PIPE; tb=typ; PIPE  { {typ=Typ ta; tail=Some (TaggedTypes {typ=Typ tb; tail=None})} }
            | ta=typ; PIPE; tb=typ;       { {typ=Typ ta; tail=Some (TaggedTypes {typ=Typ tb; tail=None})} }
            | t=typ; PIPE;  l=taggedTypes { {typ=Typ t; tail=Some (TaggedTypes l)} }
+sliceArrayType: LBRACKET; RBRACKET; t=typ;               { {mode=ArrayMode SLICE; expr=None; baseType=Typ t} }
+              | LBRACKET; e=expression; RBRACKET; t=typ; { {mode=ArrayMode BOUNDED; expr=Some (Expression e); baseType=Typ t} }
+              | LBRACKET; STAR; RBRACKET; t=typ;         { {mode=ArrayMode UNBOUNDED; expr=None; baseType=Typ t} }
+              | LBRACKET; LBAR; RBRACKET; t=typ;         { {mode=ArrayMode CONTEXT; expr=None; baseType=Typ t} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -156,7 +160,6 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-sliceArrayType: DUMMY; { A }
 functionType: DUMMY; { A }
 aliasType: DUMMY; { A }
 unwrappedAliasType: DUMMY; { A }

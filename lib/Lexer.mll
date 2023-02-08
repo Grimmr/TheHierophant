@@ -64,6 +64,9 @@ rule lex_root = parse
     | "@offset" { AOFFSET }
     | "@packed" { APACKED }
     | '|' { PIPE }
+    | '[' { LBRACKET }
+    | ']' { RBRACKET }
+    | '_' { LBAR }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }
