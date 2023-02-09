@@ -69,7 +69,14 @@ and nodeGlobalBinding = { attr: astNode option; ident: astNode; typ: astNode opt
 and nodeDeclAttr = { threadLocal: astNode; symbol: astNode option }
 and nodeConstantDeclaration = { constantBindings: astNode }
 and nodeConstantBindings = { bindings: astNode option; binding: astNode }
-and nodeConstantBinding = { ident: astNode; typ: astNode; expr:astNode}
+and nodeConstantBinding = { ident: astNode; typ: astNode; expr:astNode }
+and nodeTypeDeclaration = { typeBindings: astNode }
+and nodeTypeBindings = { binding: astNode; tail: astNode option }
+and nodeTypeBinding = { ident: astNode; typ: astNode }
+and nodeEnumType = { storage: astNode option; values: astNode }
+and nodeEnumValues = { value: astNode; tail: astNode option }
+and nodeEnumValue = { name: astNode; expr: astNode option }
+and nodeEnumStorage = { baseType: astNode }
 and nodeSubUnit = {imports: astNode option; declarations: astNode option}
 and nodeImports = {import: astNode; imports: astNode option}
 and nodeUseStatement = {alias: astNode option; ident:astNode; members:astNode option; qualify:astNode}
@@ -121,6 +128,13 @@ and astNode =  Identifier of nodeIdentifier
             | ConstantDeclaration of nodeConstantDeclaration
             | ConstantBindings of nodeConstantBindings
             | ConstantBinding of nodeConstantBinding
+            | TypeDeclaration of nodeTypeDeclaration
+            | TypeBindings of nodeTypeBindings
+            | TypeBinding of nodeTypeBinding
+            | EnumType of nodeEnumType
+            | EnumValues of nodeEnumValues
+            | EnumValue of nodeEnumValue
+            | EnumStorage of nodeEnumStorage
             | SubUnit of nodeSubUnit 
             | Imports of nodeImports
             | UseStatement of nodeUseStatement
@@ -129,7 +143,6 @@ and astNode =  Identifier of nodeIdentifier
             | Member of nodeMember
             | Bool of bool
             | Dummy of nodeDummy
-            | TypeDeclaration of nodeDummy
             | FunctionDeclaration of nodeDummy
             | Expression of nodeDummy
              
@@ -176,6 +189,13 @@ let rec sprint_ast (root:astNode) : string = match root with
   | ConstantDeclaration n -> "(ConstantDeclaration " ^ sprint_ast n.constantBindings ^ ")"
   | ConstantBindings n -> "(ConstantBindings" ^ sprint_ast_o n.bindings ^ " " ^ sprint_ast n.binding ^ ")" 
   | ConstantBinding n -> "(ConstantBinding " ^ sprint_ast n.ident ^ " " ^ sprint_ast n.typ ^ " " ^ sprint_ast n.expr ^ ")"  
+  | TypeDeclaration n -> "(TypeDeclaration " ^ sprint_ast n.typeBindings ^ ")"
+  | TypeBindings n -> "(TypeBindings " ^ sprint_ast n.binding ^ sprint_ast_o n.tail ^ ")"
+  | TypeBinding n -> "(TypeBinding " ^ sprint_ast n.ident ^ " " ^ sprint_ast n.typ ^ ")"
+  | EnumType n -> "(EnumType" ^ sprint_ast_o n.storage ^ " " ^ sprint_ast n.values ^ ")"
+  | EnumValues n -> "(EnumValues " ^ sprint_ast n.value ^ sprint_ast_o n.tail ^ ")" 
+  | EnumValue n -> "(EnumValue " ^ sprint_ast n.name ^ sprint_ast_o n.expr ^ ")"
+  | EnumStorage n -> "(EnumStorage " ^ sprint_ast n.baseType ^ ")"
   | SubUnit n -> "(SubUnit" ^ sprint_ast_o n.imports ^ sprint_ast_o n.declarations ^ ")"
   | Imports n -> "(Imports " ^ sprint_ast n.import ^ sprint_ast_o n.imports ^ ")"
   | UseStatement n -> "(UseStatement" ^ sprint_ast_o n.alias ^ " " ^ sprint_ast n.ident ^ sprint_ast_o n.members ^ " " ^ sprint_ast n.qualify ^ ")"

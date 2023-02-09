@@ -6,9 +6,9 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> functionDeclaration typeDeclaration expression
+%type <nodeDummy> functionDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -156,6 +156,23 @@ constantBindings: b=constantBinding;                          { {bindings=None; 
                 | h=constantBindings; COMA; b=constantBinding { {bindings=Some (ConstantBindings h); binding=ConstantBinding b} }
 constantBinding: i=identifier; COLON; t=typ; EQ; e=expression { {ident=Identifier i; typ=Typ t; expr=Expression e} }
 
+//6.11.5 Type Declarations
+typeDeclaration: TYPE; b=typeBindings; { {typeBindings=TypeBindings b} }
+typeBindings: b=typeBinding; COMA;                { {binding=TypeBinding b; tail=None} }
+            | b=typeBinding;                      { {binding=TypeBinding b; tail=None} }
+            | b=typeBinding; COMA; t=typeBindings { {binding=TypeBinding b; tail=Some (TypeBindings t)} }
+typeBinding: i=identifier; EQ; t=typ;      { {ident=Identifier i; typ=Typ t} }
+           | i=identifier; EQ; t=enumType; { {ident=Identifier i; typ=EnumType t} }
+enumType: ENUM; LBRACE; v=enumValues; RBRACE ;               { {storage=None; values=EnumValues v} }
+        | ENUM; s=enumStorage; LBRACE; v=enumValues; RBRACE; { {storage=Some (EnumStorage s); values=EnumValues v} }
+enumValues: v=enumValue; COMA;              { {value=EnumValue v; tail=None} }
+          | v=enumValue;                    { {value=EnumValue v; tail=None} }
+          | v=enumValue; COMA; t=enumValues { {value=EnumValue v; tail=Some (EnumValues t)} }
+enumValue: n=NAME;                   { {name=Name n; expr=None} }
+         | n=NAME; EQ; e=expression; { {name=Name n; expr=Some (Expression e)} }
+enumStorage: t=integerType { {baseType=IntegerType t} }
+           | RUNE          { {baseType=ScalarType {subType=BasicScalarType RUNE}} }
+
 //6.12 Units
 subUnit: i=imports; d=declarations; EOF; { {imports=Some (Imports i); declarations=Some (Declarations d)} }
        | i=imports; EOF;                 { {imports=Some (Imports i); declarations=None} }
@@ -176,5 +193,4 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 
 //dummies
 functionDeclaration: DUMMY; { B }
-typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
