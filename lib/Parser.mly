@@ -50,8 +50,8 @@ storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=taggedUnionType;    { {storage=TaggedUnionType t} }
             | t=sliceArrayType;     { {storage=SliceArrayType t} }
             | t=functionType;       { {storage=FunctionType t} }
-            | t=aliasType;          { {storage=Dummy t} }
-            | t=unwrappedAliasType; { {storage=Dummy t} }
+            | t=aliasType;          { {storage=AliasType t} }
+            | t=unwrappedAliasType; { {storage=UnwrappedAliasType t} }
             | t=stringType;         { {storage=StringType} }
 scalarType: t=integerType;  { {subType=IntegerType t} }
           | t=floatingType; { {subType=FloatingType t} }
@@ -118,6 +118,8 @@ parameters: p=parameter; COMA;               { {parameter=Parameter p; tail=None
           | p=parameter; COMA; t=parameters; { {parameter=Parameter p; tail=Some (Parameters t); mode=None} }
 parameter: n=NAME; COLON; t=typ; { {name=Some (Name n); typ=Typ t} }
          | LBAR; COLON; t=typ;   { {name=None; typ=Typ t} }
+aliasType: i=identifier; { {ident=Identifier i} }
+unwrappedAliasType: DOTS; i=identifier; { {ident=Identifier i} } 
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -176,5 +178,3 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-aliasType: DUMMY; { A }
-unwrappedAliasType: DUMMY; { A }

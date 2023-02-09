@@ -59,6 +59,7 @@ and nodePrototype = { parameters: astNode option; return: astNode }
 and nodeParameterList = { parameters: astNode }
 and nodeParameters = { parameter: astNode; tail:astNode option; mode:astNode option }
 and nodeParameter = { name: astNode option; typ:astNode }
+and nodeAlias = { ident: astNode; }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -107,6 +108,8 @@ and astNode =  Identifier of nodeIdentifier
             | ParameterMode of parameterMode
             | Parameter of nodeParameter
             | FntypeAttr of fntypeAttr
+            | AliasType of nodeAlias
+            | UnwrappedAliasType of nodeAlias
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -156,6 +159,8 @@ let rec sprint_ast (root:astNode) : string = match root with
   | FunctionType n -> "(FunctionType" ^ sprint_ast_o n.attr ^ " " ^ sprint_ast n.prototype ^ ")" 
   | Prototype n -> "(Prototype" ^ sprint_ast_o n.parameters ^ " " ^ sprint_ast n.return ^ ")" 
   | FntypeAttr n -> "(FntypeAttr " ^ string_of_fntypeAttr n ^ ")"
+  | AliasType n -> "(AliasType " ^ sprint_ast n.ident ^ ")"
+  | UnwrappedAliasType n -> "(UnwrappedAliasType " ^ sprint_ast n.ident ^ ")"
   | ParameterList n -> "(ParameterList " ^ sprint_ast n.parameters ^ ")"
   | Parameters n -> "(Parameters " ^ sprint_ast n.parameter ^ sprint_ast_o n.tail ^ sprint_ast_o n.mode ^ ")"
   | ParameterMode n -> "(ParameterMode " ^ string_of_parameterMode n ^ ")" 
