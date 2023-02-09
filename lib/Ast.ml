@@ -31,6 +31,15 @@ let string_of_arrayMode = function
   | CONTEXT -> "(CONTEXT)"
   | UNBOUNDED -> "(UNBOUNDED)"
 
+type fntypeAttr = ANORETURN
+let string_of_fntypeAttr = function _ -> "(ANORETURN)"
+
+type parameterMode = NORMAL | HVARIADIC | CVARIADIC
+let string_of_parameterMode = function
+  | NORMAL -> "(NORMAL)"
+  | HVARIADIC -> "(HVARIADIC)"
+  | CVARIADIC -> "(CVARIADIC)"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
@@ -45,6 +54,11 @@ and nodeOffsetSpecifier = { expr: astNode }
 and nodeIndirectTypes = { types: astNode }
 and nodeTypes = { typ: astNode; tail: astNode option }
 and nodeSliceArrayType = { mode: astNode; expr: astNode option; baseType: astNode }
+and nodeFunctionType = { attr: astNode option; prototype: astNode }
+and nodePrototype = { parameters: astNode option; return: astNode }
+and nodeParameterList = { parameters: astNode }
+and nodeParameters = { parameter: astNode; tail:astNode option; mode:astNode option }
+and nodeParameter = { name: astNode option; typ:astNode }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
@@ -85,6 +99,14 @@ and astNode =  Identifier of nodeIdentifier
             | TaggedTypes of nodeTypes
             | SliceArrayType of nodeSliceArrayType
             | ArrayMode of arrayMode
+            | StringType
+            | FunctionType of nodeFunctionType
+            | Prototype of nodePrototype
+            | ParameterList of nodeParameterList
+            | Parameters of nodeParameters
+            | ParameterMode of parameterMode
+            | Parameter of nodeParameter
+            | FntypeAttr of fntypeAttr
             | StringConstant of nodeStringConstant
             | StringLiteral of string
             | Declarations of nodeDeclarations
@@ -130,6 +152,14 @@ let rec sprint_ast (root:astNode) : string = match root with
   | TaggedTypes n -> "(TaggedTypes " ^ sprint_ast n.typ ^ sprint_ast_o n.tail ^ ")" 
   | SliceArrayType n -> "(SliceArrayType " ^ sprint_ast n.mode ^ sprint_ast_o n.expr ^ " " ^ sprint_ast n.baseType ^ ")"
   | ArrayMode n -> "(ArrayMode " ^ string_of_arrayMode n ^ ")"
+  | StringType -> "(StringType)"
+  | FunctionType n -> "(FunctionType" ^ sprint_ast_o n.attr ^ " " ^ sprint_ast n.prototype ^ ")" 
+  | Prototype n -> "(Prototype" ^ sprint_ast_o n.parameters ^ " " ^ sprint_ast n.return ^ ")" 
+  | FntypeAttr n -> "(FntypeAttr " ^ string_of_fntypeAttr n ^ ")"
+  | ParameterList n -> "(ParameterList " ^ sprint_ast n.parameters ^ ")"
+  | Parameters n -> "(Parameters " ^ sprint_ast n.parameter ^ sprint_ast_o n.tail ^ sprint_ast_o n.mode ^ ")"
+  | ParameterMode n -> "(ParameterMode " ^ string_of_parameterMode n ^ ")" 
+  | Parameter n -> "(Parameter" ^ sprint_ast_o n.name ^ " " ^ sprint_ast n.typ ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ sprint_ast_o n.declarations ^ ")"

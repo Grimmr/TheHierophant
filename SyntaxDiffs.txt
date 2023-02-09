@@ -7,3 +7,5 @@ To make a syntax that works without conflicts in an LR(1) parser generator some 
     In general rules of the form "list -> list DELIM element | element | element DELIM" cause Menhir to generate a parser that will never accept a multi element list. To preserve the syntax tree specified in the docs we move the optional DELIM after an element to an optional DELIM after a list (ie: all productions "_ -> a list b" cause an additional productions "_ -> a list DELIM b" to be added. this doesn't change the shape of the AST as DELIM doesn't have semantic content) 
     Cases:
         ConstantBindings, GlobalBindings
+
+3) parameter lists cause a conflict as parameters can be COMA terminated but can also be followed by COMA this means that "parameters COMA DOTS" causes a shift reduce conflict. To solve this the optional trailing COMA and variadic decorations have been moved to the terminating case of parameters. This means that to know if a parameter list is variadic you must look at the innermost parameters node. This DOES change the shape of the AST

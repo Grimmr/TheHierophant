@@ -8,7 +8,7 @@
 %token DUMMY 
 %type <nodeDummy> functionDeclaration typeDeclaration expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -49,10 +49,10 @@ storageClass: t=scalarType;         { {storage=ScalarType t} }
             | t=tupleType;          { {storage=TupleType t} }
             | t=taggedUnionType;    { {storage=TaggedUnionType t} }
             | t=sliceArrayType;     { {storage=SliceArrayType t} }
-            | t=functionType;       { {storage=Dummy t} }
+            | t=functionType;       { {storage=FunctionType t} }
             | t=aliasType;          { {storage=Dummy t} }
             | t=unwrappedAliasType; { {storage=Dummy t} }
-            | t=stringType;         { {storage=Dummy t} }
+            | t=stringType;         { {storage=StringType} }
 scalarType: t=integerType;  { {subType=IntegerType t} }
           | t=floatingType; { {subType=FloatingType t} }
           | t=pointerType;  { {subType=PointerType t} }
@@ -102,6 +102,22 @@ sliceArrayType: LBRACKET; RBRACKET; t=typ;               { {mode=ArrayMode SLICE
               | LBRACKET; e=expression; RBRACKET; t=typ; { {mode=ArrayMode BOUNDED; expr=Some (Expression e); baseType=Typ t} }
               | LBRACKET; STAR; RBRACKET; t=typ;         { {mode=ArrayMode UNBOUNDED; expr=None; baseType=Typ t} }
               | LBRACKET; LBAR; RBRACKET; t=typ;         { {mode=ArrayMode CONTEXT; expr=None; baseType=Typ t} }
+stringType: STR; {}
+functionType: a=fntypeAttr; FN; p=prototype; { {attr=Some (FntypeAttr a); prototype=Prototype p} }
+            | FN; p=prototype;               { {attr=None; prototype=Prototype p} }
+prototype: LPAREN; p=parameterList; RPAREN t=typ; { {parameters=Some (ParameterList p); return=Typ t} }
+         | LPAREN; RPAREN; t=typ;                 { {parameters=None; return=Typ t} }
+fntypeAttr: ANORETURN; { ANORETURN }
+parameterList: p=parameters; { {parameters=Parameters p} }
+parameters: p=parameter; COMA;               { {parameter=Parameter p; tail=None; mode=Some (ParameterMode NORMAL)} }
+          | p=parameter;                     { {parameter=Parameter p; tail=None; mode=Some (ParameterMode NORMAL)} }
+          | p=parameter; DOTS; COMA;         { {parameter=Parameter p; tail=None; mode=Some (ParameterMode HVARIADIC)} }
+          | p=parameter; DOTS;               { {parameter=Parameter p; tail=None; mode=Some (ParameterMode HVARIADIC)} }
+          | p=parameter; COMA; DOTS; COMA;   { {parameter=Parameter p; tail=None; mode=Some (ParameterMode CVARIADIC)} }
+          | p=parameter; COMA; DOTS;         { {parameter=Parameter p; tail=None; mode=Some (ParameterMode CVARIADIC)} }
+          | p=parameter; COMA; t=parameters; { {parameter=Parameter p; tail=Some (Parameters t); mode=None} }
+parameter: n=NAME; COLON; t=typ; { {name=Some (Name n); typ=Typ t} }
+         | LBAR; COLON; t=typ;   { {name=None; typ=Typ t} }
 
 //6.6 Expressions
 //6.6.16 String constants
@@ -160,7 +176,5 @@ member: i=NAME;             { {alias=None; ident=Name i} }
 functionDeclaration: DUMMY; { B }
 typeDeclaration: DUMMY;     { C }
 expression: DUMMY; { A }
-functionType: DUMMY; { A }
 aliasType: DUMMY; { A }
 unwrappedAliasType: DUMMY; { A }
-stringType: DUMMY; { A }

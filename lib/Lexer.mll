@@ -67,6 +67,10 @@ rule lex_root = parse
     | '[' { LBRACKET }
     | ']' { RBRACKET }
     | '_' { LBAR }
+    | "str" { STR }
+    | "fn" { FN }
+    | "@noreturn" { ANORETURN }
+    | "..." { DOTS }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }
