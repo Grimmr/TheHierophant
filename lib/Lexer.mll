@@ -73,6 +73,9 @@ rule lex_root = parse
     | "..." { DOTS }
     | "enum" { ENUM }
     | "type" { TYPE }
+    | "@fini" { AFINI }
+    | "@init" { AINIT }
+    | "@test" { ATEST }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }

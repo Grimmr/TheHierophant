@@ -40,6 +40,12 @@ let string_of_parameterMode = function
   | HVARIADIC -> "(HVARIADIC)"
   | CVARIADIC -> "(CVARIADIC)"
 
+type fndecAttrType = AFINI | AINIT | ATEST 
+let string_of_fndecAttrType = function
+  | AFINI -> "(AFINI)"
+  | AINIT -> "(AINIT)"
+  | ATEST -> "(ATEST)"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
@@ -77,6 +83,9 @@ and nodeEnumType = { storage: astNode option; values: astNode }
 and nodeEnumValues = { value: astNode; tail: astNode option }
 and nodeEnumValue = { name: astNode; expr: astNode option }
 and nodeEnumStorage = { baseType: astNode }
+and nodeFunctionDeclaration = { attrs: astNode option; ident: astNode; prototype: astNode; expr: astNode option }
+and nodeFndecAttrs = { attr: astNode; attrs: astNode option }
+and nodeFndecAttr = { attr: astNode }
 and nodeSubUnit = {imports: astNode option; declarations: astNode option}
 and nodeImports = {import: astNode; imports: astNode option}
 and nodeUseStatement = {alias: astNode option; ident:astNode; members:astNode option; qualify:astNode}
@@ -135,6 +144,10 @@ and astNode =  Identifier of nodeIdentifier
             | EnumValues of nodeEnumValues
             | EnumValue of nodeEnumValue
             | EnumStorage of nodeEnumStorage
+            | FunctionDeclaration of nodeFunctionDeclaration
+            | FndecAttrs of nodeFndecAttrs
+            | FndecAttr of nodeFndecAttr
+            | FndecAttrType of fndecAttrType
             | SubUnit of nodeSubUnit 
             | Imports of nodeImports
             | UseStatement of nodeUseStatement
@@ -143,7 +156,6 @@ and astNode =  Identifier of nodeIdentifier
             | Member of nodeMember
             | Bool of bool
             | Dummy of nodeDummy
-            | FunctionDeclaration of nodeDummy
             | Expression of nodeDummy
              
 let rec sprint_ast (root:astNode) : string = match root with  
@@ -196,6 +208,10 @@ let rec sprint_ast (root:astNode) : string = match root with
   | EnumValues n -> "(EnumValues " ^ sprint_ast n.value ^ sprint_ast_o n.tail ^ ")" 
   | EnumValue n -> "(EnumValue " ^ sprint_ast n.name ^ sprint_ast_o n.expr ^ ")"
   | EnumStorage n -> "(EnumStorage " ^ sprint_ast n.baseType ^ ")"
+  | FunctionDeclaration n -> "(FunctionDeclaration" ^ sprint_ast_o n.attrs ^ " " ^ sprint_ast n.ident ^ " " ^ sprint_ast n.prototype ^ sprint_ast_o n.expr ^ ")"
+  | FndecAttrs n -> "(FndecAttrs " ^ sprint_ast n.attr ^ sprint_ast_o n.attrs ^ ")"
+  | FndecAttr n -> "(FndecAttr " ^ sprint_ast n.attr ^ ")"
+  | FndecAttrType n -> "(FndecAttrType " ^ string_of_fndecAttrType n ^ ")"
   | SubUnit n -> "(SubUnit" ^ sprint_ast_o n.imports ^ sprint_ast_o n.declarations ^ ")"
   | Imports n -> "(Imports " ^ sprint_ast n.import ^ sprint_ast_o n.imports ^ ")"
   | UseStatement n -> "(UseStatement" ^ sprint_ast_o n.alias ^ " " ^ sprint_ast n.ident ^ sprint_ast_o n.members ^ " " ^ sprint_ast n.qualify ^ ")"

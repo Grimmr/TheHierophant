@@ -6,9 +6,9 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> functionDeclaration expression
+%type <nodeDummy> expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -135,6 +135,7 @@ declaration: d=globalDeclaration;   { {declaration=GlobalDeclaration d} }
            | d=constantDeclaration; { {declaration=ConstantDeclaration d} }
            | d=typeDeclaration;     { {declaration=TypeDeclaration d} }
            | d=functionDeclaration; { {declaration=FunctionDeclaration d} }
+
 //6.11.3 Global Declarations
 globalDeclaration: LET; b=globalBindings; COMA;   { {globalBindings=GlobalBindings b} }
                  | LET; b=globalBindings;         { {globalBindings=GlobalBindings b} }
@@ -173,6 +174,20 @@ enumValue: n=NAME;                   { {name=Name n; expr=None} }
 enumStorage: t=integerType { {baseType=IntegerType t} }
            | RUNE          { {baseType=ScalarType {subType=BasicScalarType RUNE}} }
 
+//6.22.6 Function Declarations
+functionDeclaration: a=fndecAttrs; FN; i=identifier; p=prototype;             { {attrs=Some (FndecAttrs a); ident=Identifier i; prototype=Prototype p; expr=None} }
+                   | FN; i=identifier; p=prototype;                           { {attrs=None; ident=Identifier i; prototype=Prototype p; expr=None} }
+                   | a=fndecAttrs; FN; n=identifier; p=prototype; EQ; e=expression; { {attrs=Some (FndecAttrs a); ident=Identifier n; prototype=Prototype p; expr=Some (Expression e)} }
+                   | FN; n=identifier; p=prototype; EQ; e=expression;               { {attrs=None; ident=Identifier n; prototype=Prototype p; expr=Some (Expression e)} }
+fndecAttrs: a=fndecAttr;               { {attr=FndecAttr a; attrs=None} }
+          | a=fndecAttr; t=fndecAttrs; { {attr=FndecAttr a; attrs=Some (FndecAttrs t)} }
+fndecAttr: AFINI;        { {attr=FndecAttrType AFINI} }
+         | AINIT;        { {attr=FndecAttrType AINIT} }
+         | ATEST;        { {attr=FndecAttrType ATEST} }
+         | a=fntypeAttr; { {attr=FntypeAttr a} }
+         | a=declAttr;   { {attr=DeclAttr a} }
+
+
 //6.12 Units
 subUnit: i=imports; d=declarations; EOF; { {imports=Some (Imports i); declarations=Some (Declarations d)} }
        | i=imports; EOF;                 { {imports=Some (Imports i); declarations=None} }
@@ -192,5 +207,4 @@ member: i=NAME;             { {alias=None; ident=Name i} }
       | a=NAME; EQ; i=NAME; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
-functionDeclaration: DUMMY; { B }
 expression: DUMMY; { A }
