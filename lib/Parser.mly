@@ -6,9 +6,8 @@
 //%type <int> program
 
 %token DUMMY 
-%type <nodeDummy> expression
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST PEQ MEQ SEQ DEQ PEREQ LEQ REQ LAEQ LOEQ LHEQ AEQ OEQ HEQ
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -125,6 +124,32 @@ unwrappedAliasType: DOTS; i=identifier; { {ident=Identifier i} }
 //6.6.16 String constants
 stringConstant: l=STRINGLIT;                   { {literal=StringLiteral l; tail=None} }
               | l=STRINGLIT; t=stringConstant; { {literal=StringLiteral l; tail=Some (StringConstant t)} }
+//6.6.46 Assignment
+assignment: l=objectSelector; o=assignmentOp; e=expression;        { {lhs=Dummy l; op=AssignmentOp o; expr=Expression e} }
+          | STAR; l=unaryExpression; o=assignmentOp; e=expression; { {lhs=Dummy l; op=AssignmentOp o; expr=Expression e} }
+          | l=slicingExpression; EQ; e=expression;                 { {lhs=Dummy l; op=AssignmentOp EQ; expr=Expression e} }
+          | LPAREN; l=bindingNames; RPAREN; EQ; e=expression;      { {lhs=Dummy l; op=AssignmentOp EQ; expr=Expression e} }
+assignmentOp: EQ;    { EQ }
+            | PEQ;   { PLUS_EQ }
+            | MEQ;   { MINUS_EQ }
+            | SEQ;   { STAR_EQ }
+            | DEQ;   { DIV_EQ }
+            | PEREQ; { MOD_EQ }
+            | LEQ;   { LEFT_EQ }
+            | REQ;   { RIGHT_EQ }
+            | LAEQ;  { LAND_EQ }
+            | LOEQ;  { LOR_EQ }
+            | LHEQ;  { LHAT_EQ }
+            | AEQ;   { AND_EQ }
+            | OEQ;   { OR_EQ }
+            | HEQ;   { HAT_EQ }
+//6.6.51 High Level Expression Class
+expression: a=assignment;          { {child=Assignment a} }
+          | l=logicalOrExpression; { {child=Dummy l} }
+          | i=ifExpression;        { {child=Dummy i} }
+          | f=forLoop;             { {child=Dummy f} }
+          | c=controlExpression;   { {child=Dummy c} }
+        
 
 //6.11 Declarations
 declarations: EXPORT; d=declaration; SEMI;                { {export=Bool true; declaration=Declaration d; declarations=None} }
@@ -207,4 +232,12 @@ member: i=NAME;             { {alias=None; ident=Name i} }
       | a=NAME; EQ; i=NAME; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
-expression: DUMMY; { A }
+logicalOrExpression: DUMMY { A } 
+ifExpression:        DUMMY { A } 
+forLoop:             DUMMY { A } 
+controlExpression:   DUMMY { A } 
+
+objectSelector:      DUMMY { A } 
+unaryExpression:     DUMMY { A }
+slicingExpression:   DUMMY { A }
+bindingNames:        DUMMY { A }

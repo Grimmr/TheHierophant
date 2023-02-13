@@ -46,6 +46,23 @@ let string_of_fndecAttrType = function
   | AINIT -> "(AINIT)"
   | ATEST -> "(ATEST)"
 
+type assignmentOpMode = EQ | PLUS_EQ | MINUS_EQ | STAR_EQ | DIV_EQ | MOD_EQ | LEFT_EQ | RIGHT_EQ | LAND_EQ | LOR_EQ | LHAT_EQ | AND_EQ | OR_EQ | HAT_EQ
+let string_of_assignmentOpMode = function
+  | EQ -> "(EQ)"
+  | PLUS_EQ -> "(PLUS_EQ)"
+  | MINUS_EQ -> "(MINUS_EQ)"
+  | STAR_EQ -> "(STAR_EQ)"
+  | DIV_EQ -> "(DIV_EQ)"
+  | MOD_EQ -> "(MOD_EQ)"
+  | LEFT_EQ -> "(LEFT_EQ)"
+  | RIGHT_EQ -> "(RIGHT_EQ)"
+  | LAND_EQ -> "(LAND_EQ)"
+  | LOR_EQ -> "(LOR_EQ)"
+  | LHAT_EQ -> "(LHAT_EQ)"
+  | OR_EQ -> "(OR_EQ)"
+  | AND_EQ -> "(AND_EQ)"
+  | HAT_EQ -> "(HAT_EQ)"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
@@ -67,6 +84,8 @@ and nodeParameters = { parameter: astNode; tail:astNode option; mode:astNode opt
 and nodeParameter = { name: astNode option; typ:astNode }
 and nodeAlias = { ident: astNode; }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
+and nodeAssignment = { lhs: astNode; op: astNode; expr: astNode }
+and nodeExpression = { child: astNode }
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
 and nodeGlobalDeclaration = { globalBindings: astNode }
@@ -127,6 +146,9 @@ and astNode =  Identifier of nodeIdentifier
             | AliasType of nodeAlias
             | UnwrappedAliasType of nodeAlias
             | StringConstant of nodeStringConstant
+            | Assignment of nodeAssignment
+            | AssignmentOp of assignmentOpMode
+            | Expression of nodeExpression
             | StringLiteral of string
             | Declarations of nodeDeclarations
             | Declaration of nodeDeclaration
@@ -156,7 +178,6 @@ and astNode =  Identifier of nodeIdentifier
             | Member of nodeMember
             | Bool of bool
             | Dummy of nodeDummy
-            | Expression of nodeDummy
              
 let rec sprint_ast (root:astNode) : string = match root with  
   | Identifier n -> "(Identifier " ^ sprint_ast n.name ^ sprint_ast_o n.tail ^ ")"
@@ -191,6 +212,9 @@ let rec sprint_ast (root:astNode) : string = match root with
   | ParameterMode n -> "(ParameterMode " ^ string_of_parameterMode n ^ ")" 
   | Parameter n -> "(Parameter" ^ sprint_ast_o n.name ^ " " ^ sprint_ast n.typ ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
+  | Assignment n -> "(Assignment " ^ sprint_ast n.lhs ^ " " ^ sprint_ast n.op ^ " " ^ sprint_ast n.expr ^ ")"
+  | AssignmentOp n -> "(AssignmentOp " ^ string_of_assignmentOpMode n ^ ")"
+  | Expression n -> "(Expression " ^ sprint_ast n.child ^ ")"
   | StringLiteral n -> "(StringLiteral " ^ n ^ ")"
   | Declarations n -> "(Declarations " ^ sprint_ast n.export ^ " " ^ sprint_ast n.declaration ^ sprint_ast_o n.declarations ^ ")"
   | Declaration n -> "(Declaration " ^ sprint_ast n.declaration ^ ")"

@@ -76,6 +76,19 @@ rule lex_root = parse
     | "@fini" { AFINI }
     | "@init" { AINIT }
     | "@test" { ATEST }
+    | "+=" { PEQ }
+    | "-=" { MEQ }
+    | "*=" { SEQ }
+    | "/=" { DEQ }
+    | "%=" { PEREQ }
+    | "<<=" { LEQ }
+    | ">>=" { REQ }
+    | "&=" { LAEQ }
+    | "|=" { LOEQ }
+    | "^=" { LHEQ }
+    | "&&=" { AEQ }
+    | "||=" { OEQ }
+    | "^^=" { HEQ }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }
