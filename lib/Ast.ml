@@ -84,8 +84,9 @@ and nodeParameters = { parameter: astNode; tail:astNode option; mode:astNode opt
 and nodeParameter = { name: astNode option; typ:astNode }
 and nodeAlias = { ident: astNode; }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
+and nodeWrapper = { child: astNode }
+and nodeBinOp = { bypass: astNode option; lhs: astNode option; rhs: astNode option }
 and nodeAssignment = { lhs: astNode; op: astNode; expr: astNode }
-and nodeExpression = { child: astNode }
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
 and nodeDeclaration = { declaration:astNode }
 and nodeGlobalDeclaration = { globalBindings: astNode }
@@ -146,9 +147,13 @@ and astNode =  Identifier of nodeIdentifier
             | AliasType of nodeAlias
             | UnwrappedAliasType of nodeAlias
             | StringConstant of nodeStringConstant
+            | ObjectSelector of nodeWrapper
+            | LogicalAndExpression of nodeBinOp
+            | LogicalXorExpression of nodeBinOp
+            | LogicalOrExpression of nodeBinOp
             | Assignment of nodeAssignment
             | AssignmentOp of assignmentOpMode
-            | Expression of nodeExpression
+            | Expression of nodeWrapper
             | StringLiteral of string
             | Declarations of nodeDeclarations
             | Declaration of nodeDeclaration
@@ -212,6 +217,10 @@ let rec sprint_ast (root:astNode) : string = match root with
   | ParameterMode n -> "(ParameterMode " ^ string_of_parameterMode n ^ ")" 
   | Parameter n -> "(Parameter" ^ sprint_ast_o n.name ^ " " ^ sprint_ast n.typ ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
+  | ObjectSelector n -> "(ObjectSelector " ^ sprint_ast n.child ^ ")"
+  | LogicalAndExpression n -> "(LogicalAndExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | LogicalXorExpression n -> "(LogicalXorExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | LogicalOrExpression n -> "(LogicalOrExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
   | Assignment n -> "(Assignment " ^ sprint_ast n.lhs ^ " " ^ sprint_ast n.op ^ " " ^ sprint_ast n.expr ^ ")"
   | AssignmentOp n -> "(AssignmentOp " ^ string_of_assignmentOpMode n ^ ")"
   | Expression n -> "(Expression " ^ sprint_ast n.child ^ ")"

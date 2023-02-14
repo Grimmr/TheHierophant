@@ -7,7 +7,7 @@
 
 %token DUMMY 
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST PEQ MEQ SEQ DEQ PEREQ LEQ REQ LAEQ LOEQ LHEQ AEQ OEQ HEQ
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST PEQ MEQ SEQ DEQ PEREQ LEQ REQ LAEQ LOEQ LHEQ AEQ OEQ HEQ LAND LHAT LOR
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -124,8 +124,19 @@ unwrappedAliasType: DOTS; i=identifier; { {ident=Identifier i} }
 //6.6.16 String constants
 stringConstant: l=STRINGLIT;                   { {literal=StringLiteral l; tail=None} }
               | l=STRINGLIT; t=stringConstant; { {literal=StringLiteral l; tail=Some (StringConstant t)} }
+//6.6.31 Postfix Expressions 
+objectSelector: i=identifier;            { {child=Identifier i} }
+              | i=indexingExpression;    { {child=Dummy i} }
+              | a=fieldAccessExpression; { {child=Dummy a} }
+//6.6.41 Logical arithmetic
+logicalAndExpression: b=equalityExpression;                               { {bypass=Some (Dummy b); lhs=None; rhs=None} }
+                    | l=logicalAndExpression; LAND; r=equalityExpression; { {bypass=None; lhs=Some (LogicalAndExpression l); rhs=Some (Dummy r)} }
+logicalXorExpression: b=logicalAndExpression;                               { {bypass=Some(LogicalAndExpression b); lhs=None; rhs=None} }
+                    | l=logicalXorExpression; LHAT; r=logicalAndExpression; { {bypass=None; lhs=Some (LogicalXorExpression l); rhs=Some (LogicalAndExpression r)} }
+logicalOrExpression: b=logicalXorExpression;                             { {bypass=Some (LogicalXorExpression b); lhs=None; rhs=None} }
+                   | l=logicalOrExpression; LOR; r=logicalXorExpression; { {bypass=None; lhs=Some (LogicalOrExpression l); rhs=Some (LogicalXorExpression r)} }
 //6.6.46 Assignment
-assignment: l=objectSelector; o=assignmentOp; e=expression;        { {lhs=Dummy l; op=AssignmentOp o; expr=Expression e} }
+assignment: l=objectSelector; o=assignmentOp; e=expression;        { {lhs=ObjectSelector l; op=AssignmentOp o; expr=Expression e} }
           | STAR; l=unaryExpression; o=assignmentOp; e=expression; { {lhs=Dummy l; op=AssignmentOp o; expr=Expression e} }
           | l=slicingExpression; EQ; e=expression;                 { {lhs=Dummy l; op=AssignmentOp EQ; expr=Expression e} }
           | LPAREN; l=bindingNames; RPAREN; EQ; e=expression;      { {lhs=Dummy l; op=AssignmentOp EQ; expr=Expression e} }
@@ -145,7 +156,7 @@ assignmentOp: EQ;    { EQ }
             | HEQ;   { HAT_EQ }
 //6.6.51 High Level Expression Class
 expression: a=assignment;          { {child=Assignment a} }
-          | l=logicalOrExpression; { {child=Dummy l} }
+          | l=logicalOrExpression; { {child=LogicalOrExpression l} }
           | i=ifExpression;        { {child=Dummy i} }
           | f=forLoop;             { {child=Dummy f} }
           | c=controlExpression;   { {child=Dummy c} }
@@ -232,12 +243,13 @@ member: i=NAME;             { {alias=None; ident=Name i} }
       | a=NAME; EQ; i=NAME; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
-logicalOrExpression: DUMMY { A } 
+equalityExpression: DUMMY { A } 
 ifExpression:        DUMMY { A } 
 forLoop:             DUMMY { A } 
 controlExpression:   DUMMY { A } 
 
-objectSelector:      DUMMY { A } 
+indexingExpression: DUMMY { A }
+fieldAccessExpression: DUMMY { A }
 unaryExpression:     DUMMY { A }
 slicingExpression:   DUMMY { A }
 bindingNames:        DUMMY { A }

@@ -89,6 +89,9 @@ rule lex_root = parse
     | "&&=" { AEQ }
     | "||=" { OEQ }
     | "^^=" { HEQ }
+    | "&&" { LAND }
+    | "^^" { LHAT }
+    | "||" { LOR }
     | "DUMMY" { DUMMY } (*PLACEHOLDER MUST REMOVE*)
     | stringLit { STRINGLIT (let t=Lexing.lexeme lexbuf in String.sub t 1 ((String.length t) - 2)) }
     | name { NAME (Lexing.lexeme lexbuf) }
