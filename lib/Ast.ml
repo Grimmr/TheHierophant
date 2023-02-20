@@ -63,6 +63,18 @@ let string_of_assignmentOpMode = function
   | AND_EQ -> "(AND_EQ)"
   | HAT_EQ -> "(HAT_EQ)"
 
+type equalityOpMode = EQUIV | BANG_EQUIV
+let string_of_equalityOpMode = function
+  | EQUIV -> "(EQUIV)"
+  | BANG_EQUIV -> "(BANG_EQUIV)"
+
+type comparisonOpMode = LESS | GREATER | LESS_EQ | GREATER_EQ
+let string_of_comparisonOpMode = function
+  | LESS -> "(LESS)"
+  | GREATER -> "(GREATER)"
+  | LESS_EQ -> "(LESS_EQ)"
+  | GREATER_EQ -> "(GREATER_EQ)"
+
 type nodeIdentifier = { name: astNode; tail:astNode option}
 and nodeTyp = { const: astNode; error: astNode; storage: astNode}
 and nodeStorageClass = { storage: astNode }
@@ -85,6 +97,7 @@ and nodeParameter = { name: astNode option; typ:astNode }
 and nodeAlias = { ident: astNode; }
 and nodeStringConstant = { literal:astNode; tail:astNode option}
 and nodeWrapper = { child: astNode }
+and nodeMultiModeBinOp = { bypass: astNode option; mode: astNode option; lhs: astNode option; rhs: astNode option }
 and nodeBinOp = { bypass: astNode option; lhs: astNode option; rhs: astNode option }
 and nodeAssignment = { lhs: astNode; op: astNode; expr: astNode }
 and nodeDeclarations = { export:astNode; declaration: astNode; declarations: astNode option}
@@ -148,6 +161,10 @@ and astNode =  Identifier of nodeIdentifier
             | UnwrappedAliasType of nodeAlias
             | StringConstant of nodeStringConstant
             | ObjectSelector of nodeWrapper
+            | ComparisonExpression of nodeMultiModeBinOp
+            | ComparisonOpMode of comparisonOpMode
+            | EqualityExpression of nodeMultiModeBinOp
+            | EqualityOpMode of equalityOpMode
             | LogicalAndExpression of nodeBinOp
             | LogicalXorExpression of nodeBinOp
             | LogicalOrExpression of nodeBinOp
@@ -216,8 +233,12 @@ let rec sprint_ast (root:astNode) : string = match root with
   | Parameters n -> "(Parameters " ^ sprint_ast n.parameter ^ sprint_ast_o n.tail ^ sprint_ast_o n.mode ^ ")"
   | ParameterMode n -> "(ParameterMode " ^ string_of_parameterMode n ^ ")" 
   | Parameter n -> "(Parameter" ^ sprint_ast_o n.name ^ " " ^ sprint_ast n.typ ^ ")"
-  | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")" 
+  | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")"  
   | ObjectSelector n -> "(ObjectSelector " ^ sprint_ast n.child ^ ")"
+  | ComparisonExpression n -> "(ComparisonExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.mode ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | ComparisonOpMode n -> "(ComparisonOpMode " ^ string_of_comparisonOpMode n ^ ")"
+  | EqualityExpression n -> "(EqualityExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.mode ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | EqualityOpMode n -> "(EqualityOpMode " ^ string_of_equalityOpMode n ^ ")"
   | LogicalAndExpression n -> "(LogicalAndExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
   | LogicalXorExpression n -> "(LogicalXorExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
   | LogicalOrExpression n -> "(LogicalOrExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
