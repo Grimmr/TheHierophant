@@ -161,6 +161,9 @@ and astNode =  Identifier of nodeIdentifier
             | UnwrappedAliasType of nodeAlias
             | StringConstant of nodeStringConstant
             | ObjectSelector of nodeWrapper
+            | AndExpression of nodeBinOp
+            | ExclusiveOrExpression of nodeBinOp
+            | InclusiveOrExpression of nodeBinOp
             | ComparisonExpression of nodeMultiModeBinOp
             | ComparisonOpMode of comparisonOpMode
             | EqualityExpression of nodeMultiModeBinOp
@@ -235,6 +238,9 @@ let rec sprint_ast (root:astNode) : string = match root with
   | Parameter n -> "(Parameter" ^ sprint_ast_o n.name ^ " " ^ sprint_ast n.typ ^ ")"
   | StringConstant n -> "(StringConstant " ^ sprint_ast n.literal ^ sprint_ast_o n.tail ^ ")"  
   | ObjectSelector n -> "(ObjectSelector " ^ sprint_ast n.child ^ ")"
+  | AndExpression n -> "(AndExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | ExclusiveOrExpression n -> "(ExclusiveOrExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
+  | InclusiveOrExpression n -> "(InclusiveOrExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
   | ComparisonExpression n -> "(ComparisonExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.mode ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"
   | ComparisonOpMode n -> "(ComparisonOpMode " ^ string_of_comparisonOpMode n ^ ")"
   | EqualityExpression n -> "(EqualityExpression" ^ sprint_ast_o n.bypass ^ sprint_ast_o n.mode ^ sprint_ast_o n.lhs ^ sprint_ast_o n.rhs ^ ")"

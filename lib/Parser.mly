@@ -7,7 +7,7 @@
 
 %token DUMMY 
 
-%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST PEQ MEQ SEQ DEQ PEREQ LEQ REQ LAEQ LOEQ LHEQ AEQ OEQ HEQ LAND LHAT LOR LT LTE GT GTE EQUIV BANGEQUIV
+%token EOF USE SEMI STAR COLON DCOLON DCOLONB DCOLONS LBRACE RBRACE EQ COMA EXPORT LET CONST ASYMBOL ATHREADLOCAL LPAREN RPAREN DEF BANG BOOL RUNE VALIST VOID I8 I16 I32 I64 U8 U16 U32 U64 INT UINT SIZE UINTPTR CHAR F32 F64 NULLABLE STRUCT UNION AOFFSET APACKED PIPE LBRACKET RBRACKET LBAR STR FN ANORETURN DOTS ENUM TYPE AINIT AFINI ATEST PEQ MEQ SEQ DEQ PEREQ LEQ REQ LAEQ LOEQ LHEQ AEQ OEQ HEQ LAND LHAT LOR LT LTE GT GTE EQUIV BANGEQUIV HAT AMPERSAND
 %token <string> NAME STRINGLIT
 
 %start subUnit
@@ -128,16 +128,23 @@ stringConstant: l=STRINGLIT;                   { {literal=StringLiteral l; tail=
 objectSelector: i=identifier;            { {child=Identifier i} }
               | i=indexingExpression;    { {child=Dummy i} }
               | a=fieldAccessExpression; { {child=Dummy a} }
-//6.6.40 Logical comparisons
-comparisonExpression: b=inclusiveOrExpression;                              { {bypass=Some (Dummy b); mode=None; lhs=None; rhs=None} }
-                    | l=comparisonExpression; LT; r=inclusiveOrExpression;  { {bypass=None; mode=Some (ComparisonOpMode LESS); lhs=Some (ComparisonExpression l); rhs=Some (Dummy r)} }
-                    | l=comparisonExpression; GT; r=inclusiveOrExpression;  { {bypass=None; mode=Some (ComparisonOpMode GREATER); lhs=Some (ComparisonExpression l); rhs=Some (Dummy r)} }
-                    | l=comparisonExpression; LTE; r=inclusiveOrExpression; { {bypass=None; mode=Some (ComparisonOpMode LESS_EQ); lhs=Some (ComparisonExpression l); rhs=Some (Dummy r)} }
-                    | l=comparisonExpression; GTE; r=inclusiveOrExpression; { {bypass=None; mode=Some (ComparisonOpMode GREATER_EQ); lhs=Some (ComparisonExpression l); rhs=Some (Dummy r)} }
-equalityExpression: b=comparisonExpression;                                 { {bypass=Some (ComparisonExpression b); mode=None; lhs=None; rhs=None} }
+//6.6.40 Logical arithmetic
+andExpression: b=shiftExpression;                            { {bypass=Some (Dummy b); lhs=None; rhs=None} }
+             | l=andExpression; AMPERSAND; r=shiftExpression { {bypass=None; lhs=Some (AndExpression l); rhs=Some (Dummy r)} } 
+exclusiveOrExpression: b=andExpression;                              { {bypass=Some (AndExpression b); lhs=None; rhs=None} }
+                     | l=exclusiveOrExpression; HAT; r=andExpression { {bypass=None; lhs=Some (ExclusiveOrExpression l); rhs=Some (AndExpression r)} } 
+inclusiveOrExpression: b=exclusiveOrExpression;                               { {bypass=Some (ExclusiveOrExpression b); lhs=None; rhs=None} }
+                     | l=inclusiveOrExpression; PIPE; r=exclusiveOrExpression { {bypass=None; lhs=Some (InclusiveOrExpression l); rhs=Some (ExclusiveOrExpression r)} } 
+//6.6.41 Logical comparisons
+comparisonExpression: b=inclusiveOrExpression;                              { {bypass=Some (InclusiveOrExpression b); mode=None; lhs=None; rhs=None} }
+                    | l=comparisonExpression; LT; r=inclusiveOrExpression;  { {bypass=None; mode=Some (ComparisonOpMode LESS); lhs=Some (ComparisonExpression l); rhs=Some (InclusiveOrExpression r)} }
+                    | l=comparisonExpression; GT; r=inclusiveOrExpression;  { {bypass=None; mode=Some (ComparisonOpMode GREATER); lhs=Some (ComparisonExpression l); rhs=Some (InclusiveOrExpression r)} }
+                    | l=comparisonExpression; LTE; r=inclusiveOrExpression; { {bypass=None; mode=Some (ComparisonOpMode LESS_EQ); lhs=Some (ComparisonExpression l); rhs=Some (InclusiveOrExpression r)} }
+                    | l=comparisonExpression; GTE; r=inclusiveOrExpression; { {bypass=None; mode=Some (ComparisonOpMode GREATER_EQ); lhs=Some (ComparisonExpression l); rhs=Some (InclusiveOrExpression r)} }
+equalityExpression: b=comparisonExpression;                                  { {bypass=Some (ComparisonExpression b); mode=None; lhs=None; rhs=None} }
                   | l=equalityExpression; EQUIV; r=comparisonExpression;     { {bypass=None; mode=Some (EqualityOpMode EQUIV); lhs=Some (EqualityExpression l); rhs=Some (ComparisonExpression r)} }
                   | l=equalityExpression; BANGEQUIV; r=comparisonExpression; { {bypass=None; mode=Some (EqualityOpMode BANG_EQUIV); lhs=Some (EqualityExpression l); rhs=Some (ComparisonExpression r)} }
-//6.6.41 Logical arithmetic
+//6.6.42 Logical arithmetic
 logicalAndExpression: b=equalityExpression;                               { {bypass=Some (EqualityExpression b); lhs=None; rhs=None} }
                     | l=logicalAndExpression; LAND; r=equalityExpression; { {bypass=None; lhs=Some (LogicalAndExpression l); rhs=Some (EqualityExpression r)} }
 logicalXorExpression: b=logicalAndExpression;                               { {bypass=Some(LogicalAndExpression b); lhs=None; rhs=None} }
@@ -252,13 +259,13 @@ member: i=NAME;             { {alias=None; ident=Name i} }
       | a=NAME; EQ; i=NAME; { {alias=Some (Name a); ident=Name i} } 
 
 //dummies
-inclusiveOrExpression: DUMMY { A } 
+shiftExpression:     DUMMY { A } 
 ifExpression:        DUMMY { A } 
 forLoop:             DUMMY { A } 
 controlExpression:   DUMMY { A } 
 
-indexingExpression: DUMMY { A }
+indexingExpression:    DUMMY { A }
 fieldAccessExpression: DUMMY { A }
-unaryExpression:     DUMMY { A }
-slicingExpression:   DUMMY { A }
-bindingNames:        DUMMY { A }
+unaryExpression:       DUMMY { A }
+slicingExpression:     DUMMY { A }
+bindingNames:          DUMMY { A }
